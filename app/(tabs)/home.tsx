@@ -1,32 +1,47 @@
-import { View, Text, ScrollView, Image, Dimensions, FlatList } from 'react-native'
+import { View, Text, ScrollView, Image, Dimensions, FlatList, TouchableOpacity } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { StatusBar } from 'expo-status-bar'
 
 import { database } from '../../firebaseConfig';
 import { onValue, ref } from 'firebase/database';
+import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
 const Home = () => {
 
     const [data, setData] = useState([]);
+    const [projectDetails, setProjectDetails] = useState({})
     const flatListRef = useRef<FlatList>(null);
     const [currentIndex, setCurrentIndex] = useState(0);
 
-    useEffect(() => {
+    const router = useRouter();
 
-        const dbRef = ref(database, 'list/projects');
-        const unsubscribe = onValue(dbRef, (snapshot) => {
+    const projectsRef = ref(database, 'list/projects');
+    const projectDetailsRef = ref(database, 'list/project-details');
+
+    useEffect(() => {
+        const unsubscribeProjects = onValue(projectsRef, (snapshot) => {
             if (snapshot.exists()) {
-                setData(snapshot.val());
+                setData(snapshot.val() || []);
             } else {
                 setData([]);
             }
         });
 
-        return () => unsubscribe();
+        const unsubscribeDetails = onValue(projectDetailsRef, (snapshot) => {
+            if (snapshot.exists()) {
+                setProjectDetails(snapshot.val() || {});
+            } else {
+                setProjectDetails({});
+            }
+        });
 
+        return () => {
+            unsubscribeProjects();
+            unsubscribeDetails();
+        };
     }, []);
 
     useEffect(() => {
@@ -42,22 +57,32 @@ const Home = () => {
                 index: nextIndex,
                 animated: true,
             });
-        }, 2000); // Setiap 3 detik
+        }, 2000);
 
-        return () => clearInterval(interval); // Bersihkan interval
+        return () => clearInterval(interval);
     }, [currentIndex, data]);
 
-    const renderItem = ({ item }: { item: String }) => (
-        <View
-            className="bg-[#1C2938] rounded-lg p-5 items-center justify-center"
-            style={{
-                width: width * 0.8,
-                marginHorizontal: width * 0.05,
-            }}
-        >
-            <Text className="text-white text-lg font-bold text-center">{item}</Text>
-        </View>
-    );
+    const renderItem = ({ item }: { item: String }) => {
+        return (
+            <TouchableOpacity
+                onPress={() => {
+                    console.log('Navigating to:', item.replace(/\s/g, '').toLowerCase());
+                    router.push({
+                        pathname: "/(tabs)/project/[project]",
+                        params: { project: item.replace(/\s/g, '').toLowerCase() },
+                    });
+                }
+                }
+                className="bg-[#1C2938] rounded-lg p-5 items-center justify-center"
+                style={{
+                    width: width * 0.8,
+                    marginHorizontal: width * 0.05,
+                }}
+            >
+                <Text className="text-white text-lg font-bold text-center">{item}</Text>
+            </TouchableOpacity>
+        )
+    };
 
     return (
         <SafeAreaView className='bg-[#09182D] h-full'>
@@ -80,7 +105,7 @@ const Home = () => {
                     />
                     <View>
                         <Text className="text-gray-200 text-lg font-bold text-center mb-4">
-                            Firebase Projects:
+                            Recent Projects:
                         </Text>
                         {data.length > 0 ? (
                             <FlatList
@@ -92,9 +117,8 @@ const Home = () => {
                                 renderItem={renderItem}
                             />
                         ) : (
-                            <Text className="text-gray-500 text-center">No data available.</Text>
+                            <Text className="text-gray-500 text-lg font-bold text-center">No data available.</Text>
                         )}
-
                     </View>
                 </View>
             </ScrollView>
