@@ -1,3 +1,7 @@
+# NOTE!!!
+
+I am using expo go for development and have not prepared the application for production deployment. Please use expo go as well for testing convenience.
+
 # Welcome to your Expo app 👋
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
