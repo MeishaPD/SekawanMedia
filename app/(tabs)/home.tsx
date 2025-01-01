@@ -87,11 +87,11 @@ const Home = () => {
     return (
         <SafeAreaView className='bg-[#09182D] h-full'>
             <ScrollView>
-                <View className='w-full min-h-[85vh] flex flex-col px-4 my-6'>
+                <View className='w-full min-h-[85vh] items-center flex-col px-6 my-6'>
                     <View className='flex-row w-full justify-center items-center'>
                         <Image
                             source={require('../../assets/images/logo sekawan light.png')}
-                            className='w-40 h-40 mr-4'
+                            className='w-40 h-40'
                             resizeMode='contain'
                         />
                     </View>
@@ -115,10 +115,14 @@ const Home = () => {
                                 keyExtractor={(_item, index) => index.toString()}
                                 showsHorizontalScrollIndicator={false}
                                 renderItem={renderItem}
+                                className='flex-grow-0 self-center'
                             />
                         ) : (
                             <Text className="text-gray-500 text-lg font-bold text-center">No data available.</Text>
                         )}
+                        <Text className='text-slate-400 text-center text-md mt-4'>
+                            Click to view the project details.
+                        </Text>
                     </View>
                 </View>
             </ScrollView>
